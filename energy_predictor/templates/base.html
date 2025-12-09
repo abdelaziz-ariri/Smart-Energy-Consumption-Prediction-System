@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord énergétique - {% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="{{ url_for('dashboard') }}" class="navbar-brand">
+                <i class="fas fa-bolt" ></i> EnergyDashboard
+            </a>
+            <ul class="navbar-nav">
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                        <i class="fas fa-home"></i> Tableau de bord
+                    </a></li>
+                    <li><a href="{{ url_for('historique') }}" class="nav-link {% if request.endpoint == 'historique' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i> Historique
+                    </a></li>
+                    <li><a href="{{ url_for('predictions') }}" class="nav-link {% if request.endpoint == 'predictions' %}active{% endif %}">
+                        <i class="fas fa-crystal-ball"></i> Prédictions
+                    </a></li>
+                    <li><a href="{{ url_for('notifications_page') }}" class="nav-link {% if request.endpoint == 'notifications_page' %}active{% endif %}">
+                        <i class="fas fa-bell"></i> Notifications
+                        <span id="notification-badge" class="notification-badge" style="display: none;">0</span>
+                    </a></li>
+                    <li><a href="{{ url_for('logout') }}" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}" class="nav-link">Connexion</a></li>
+                    <li><a href="{{ url_for('register') }}" class="nav-link">Inscription</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

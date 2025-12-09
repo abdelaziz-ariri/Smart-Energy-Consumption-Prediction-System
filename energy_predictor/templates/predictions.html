@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Prédictions{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1><i class="fas fa-crystal-ball"></i> Prédictions de consommation</h1>
+</div>
+
+<div class="chart-container">
+    <div class="chart-header">
+        <h2>Prédiction personnalisée</h2>
+        <div class="controls">
+            <select id="predict-days" class="select">
+                <option value="3">3 jours</option>
+                <option value="7" selected>7 jours</option>
+                <option value="14">14 jours</option>
+                <option value="30">30 jours</option>
+            </select>
+            <button id="predict-btn" class="btn btn-success">
+                <i class="fas fa-play"></i> Générer la prédiction
+            </button>
+        </div>
+    </div>
+    <div id="prediction-chart" style="height: 500px;">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Préparation du modèle de prédiction...</p>
+        </div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Fiabilité du modèle</h3>
+        <div class="value">94.2%</div>
+        <div class="trend up"><i class="fas fa-arrow-up"></i> +1.5% ce mois</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Précision moyenne</h3>
+        <div class="value">±3.2%</div>
+        <div class="trend down"><i class="fas fa-arrow-down"></i> -0.8% vs dernier modèle</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Données d'entraînement</h3>
+        <div class="value">365 jours</div>
+        <div class="trend">Mise à jour quotidienne</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Prochaine mise à jour</h3>
+        <div class="value">Dans 6h</div>
+        <div class="trend">Automatique</div>
+    </div>
+</div>
+
+<div class="chart-container">
+    <div class="chart-header">
+        <h2>À propos du modèle de prédiction</h2>
+    </div>
+    <div style="padding: 1rem;">
+        <p>Notre modèle utilise un algorithme d'apprentissage automatique avancé pour prédire votre consommation énergétique future.</p>
+        <p><strong>Fonctionnalités du modèle:</strong></p>
+        <ul>
+            <li>Analyse des tendances saisonnières hebdomadaires et mensuelles</li>
+            <li>Prise en compte des variations météorologiques</li>
+            <li>Adaptation aux changements de comportement</li>
+            <li>Détection des anomalies pour améliorer la précision</li>
+        </ul>
+        <p>Sélectionnez le nombre de jours à prédire et cliquez sur "Générer la prédiction" pour voir les résultats.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Générer une prédiction par défaut au chargement
+    setTimeout(() => {
+        window.dashboard.predictConsumption();
+    }, 1000);
+});
+</script>
+{% endblock %}

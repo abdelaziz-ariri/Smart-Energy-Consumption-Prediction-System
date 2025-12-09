@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>⚡ Live Energy Dashboard with Filters & Anomalies</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { background: #0d1117; color: #fff; font-family: Arial, sans-serif; }
+        h2 { text-align: center; margin-top: 20px; font-size: 32px; }
+        .container { width: 90%; margin: auto; }
+        .cards { display: flex; justify-content: space-between; margin-top: 30px; }
+        .card { flex: 1; margin: 10px; padding: 20px; background: #161b22; border-radius: 12px; text-align: center; font-size: 22px; box-shadow: 0px 0px 10px #000; }
+        #filters { display: flex; justify-content: space-around; margin-top: 20px; background: #161b22; padding: 15px; border-radius: 10px; }
+        #filters label { margin-right: 5px; }
+        #chart, #histogram, #daily-bar { margin-top: 40px; }
+        table { width: 100%; margin-top: 30px; border-collapse: collapse; background: #161b22; border-radius: 12px; overflow: hidden; }
+        table th, table td { padding: 10px; border-bottom: 1px solid #333; }
+        table th { background: #1f2937; }
+        button { padding: 5px 10px; border-radius: 5px; border: none; background: #0f766e; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h2>⚡ Real-Time Energy Dashboard with Filters & Anomalies</h2>
+    <div class="container">
+
+        <!-- KPI Cards -->
+        <div class="cards">
+            <div class="card"><h3>Current</h3><p id="kpi-current">--</p></div>
+            <div class="card"><h3>Average</h3><p id="kpi-average">--</p></div>
+            <div class="card"><h3>Max</h3><p id="kpi-max">--</p></div>
+            <div class="card"><h3>Std Dev</h3><p id="kpi-std">--</p></div>
+        </div>
+
+        <!-- Filters -->
+        <div id="filters">
+            <div>
+                <label for="start-date">Start:</label>
+                <input type="datetime-local" id="start-date">
+            </div>
+            <div>
+                <label for="end-date">End:</label>
+                <input type="datetime-local" id="end-date">
+            </div>
+            <div>
+                <label for="min-threshold">Min Consumption:</label>
+                <input type="number" id="min-threshold" placeholder="50">
+            </div>
+            <div>
+                <button onclick="applyManualFilters()">Apply Filters</button>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div id="chart" style="height: 450px;"></div>
+        <h3>Consumption Distribution</h3>
+        <div id="histogram" style="height: 350px;"></div>
+        <h3>Daily Average Consumption</h3>
+        <div id="daily-bar" style="height: 350px;"></div>
+
+        <!-- Recent Records -->
+        <h3>Recent Records</h3>
+        <table>
+            <thead>
+                <tr><th>Timestamp</th><th>Consumption</th></tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+
+        <!-- Anomalies -->
+        <h3>Detected Anomalies</h3>
+        <table>
+            <thead>
+                <tr><th>Timestamp</th><th>Consumption</th></tr>
+            </thead>
+            <tbody id="anomalies-body"></tbody>
+        </table>
+
+    </div>
+
+    <script>
+        let allData = []; // store all fetched data
+        let currentFilters = { startDate: "", endDate: "", minThreshold: "" };
+        let displayedAnomalyTimestamps = new Set(); // track displayed anomalies
+
+        // --- Fetch main data ---
+        async function fetchData() {
+            const response = await fetch("/data");
+            allData = await response.json();
+        }
+
+        // --- Apply filters ---
+        function applyFilters() {
+            return allData.filter(d => {
+                let time = new Date(d.timestamp);
+                let startCheck = currentFilters.startDate ? time >= new Date(currentFilters.startDate) : true;
+                let endCheck = currentFilters.endDate ? time <= new Date(currentFilters.endDate) : true;
+                let minCheck = currentFilters.minThreshold ? d.consumption >= parseInt(currentFilters.minThreshold) : true;
+                return startCheck && endCheck && minCheck;
+            });
+        }
+
+        // --- Update dashboard ---
+        function updateDashboard() {
+            const filteredData = applyFilters();
+            if(filteredData.length === 0) return;
+
+            const timestamps = filteredData.map(d => d.timestamp);
+            const values = filteredData.map(d => d.consumption);
+
+            // KPIs
+            document.getElementById("kpi-current").innerText = values.at(-1);
+            const avg = values.reduce((a,b)=>a+b)/values.length;
+            document.getElementById("kpi-average").innerText = avg.toFixed(2);
+            document.getElementById("kpi-max").innerText = Math.max(...values);
+            const std = Math.sqrt(values.map(v => (v-avg)**2).reduce((a,b)=>a+b)/values.length);
+            document.getElementById("kpi-std").innerText = std.toFixed(2);
+
+            // Table
+            const tbody = document.getElementById("table-body");
+            tbody.innerHTML = "";
+            filteredData.slice().reverse().forEach(row => {
+                tbody.innerHTML += `<tr><td>${row.timestamp}</td><td>${row.consumption}</td></tr>`;
+            });
+
+            // Line chart
+            Plotly.newPlot("chart", [{x: timestamps, y: values, mode: "lines+markers", line:{color:"cyan"}}], 
+                {title:"Energy Consumption Over Time", paper_bgcolor:'#0d1117', plot_bgcolor:'#0d1117', font:{color:'white'}});
+
+            // Histogram
+            Plotly.newPlot("histogram", [{x: values, type:"histogram", marker:{color:"orange"}}], 
+                {title:"Consumption Distribution", paper_bgcolor:'#0d1117', plot_bgcolor:'#0d1117', font:{color:'white'}});
+
+            // Daily average bar
+            let daily = {};
+            timestamps.forEach((t,i)=>{
+                let day = t.substring(0,10);
+                if(!daily[day]) daily[day]=[];
+                daily[day].push(values[i]);
+            });
+            let days = Object.keys(daily);
+            let dayAvg = days.map(d => daily[d].reduce((a,b)=>a+b)/daily[d].length);
+            Plotly.newPlot("daily-bar", [{x:days, y:dayAvg, type:"bar", marker:{color:"lightgreen"}}],
+                {title:"Daily Average Consumption", paper_bgcolor:'#0d1117', plot_bgcolor:'#0d1117', font:{color:'white'}});
+        }
+
+        // --- Apply manual filters ---
+        function applyManualFilters() {
+            currentFilters.startDate = document.getElementById('start-date').value;
+            currentFilters.endDate = document.getElementById('end-date').value;
+            currentFilters.minThreshold = document.getElementById('min-threshold').value;
+            updateDashboard();
+        }
+
+        // --- Fetch anomalies and append only new ones ---
+        async function fetchAnomalies() {
+            const response = await fetch("/anomalies");
+            const data = await response.json();
+            const tbody = document.getElementById("anomalies-body");
+
+            data.slice().reverse().forEach(row => {
+                if (!displayedAnomalyTimestamps.has(row.timestamp)) {
+                    tbody.innerHTML += `<tr><td>${row.timestamp}</td><td>${row.consumption}</td></tr>`;
+                    displayedAnomalyTimestamps.add(row.timestamp);
+                }
+            });
+        }
+
+        // --- Auto-refresh every 2 seconds ---
+        async function autoRefresh() {
+            await fetchData();
+            updateDashboard();
+            await fetchAnomalies();
+        }
+        setInterval(autoRefresh, 2000);
+        autoRefresh(); // initial load
+    </script>
+</body>
+</html>

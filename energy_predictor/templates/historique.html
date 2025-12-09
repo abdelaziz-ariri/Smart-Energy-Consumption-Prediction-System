@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Historique{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1><i class="fas fa-history"></i> Historique de consommation</h1>
+</div>
+
+<div class="chart-container">
+    <div class="chart-header">
+        <h2>Évolution sur la période sélectionnée</h2>
+        <div class="controls">
+            <button class="period-btn btn btn-outline active" data-period="7d">7 jours</button>
+            <button class="period-btn btn btn-outline" data-period="30d">30 jours</button>
+            <button class="period-btn btn btn-outline" data-period="90d">90 jours</button>
+        </div>
+    </div>
+    <div id="historical-chart" style="height: 500px;"></div>
+</div>
+
+<div class="chart-container">
+    <div class="chart-header">
+        <h2>Analyse détaillée</h2>
+    </div>
+    <div style="padding: 1rem;">
+        <p>L'historique montre l'évolution de votre consommation énergétique sur la période sélectionnée.</p>
+        <ul>
+            <li><strong>Ligne bleue:</strong> Consommation quotidienne en kWh</li>
+            <li><strong>Zone grise:</strong> Plage de consommation normale basée sur l'historique</li>
+            <li><strong>Points rouges:</strong> Jours avec consommation anormale</li>
+        </ul>
+        <p>Utilisez les boutons ci-dessus pour changer la période d'analyse.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Charger les données historiques par défaut
+    window.dashboard.loadHistoricalData('7d');
+});
+</script>
+{% endblock %}

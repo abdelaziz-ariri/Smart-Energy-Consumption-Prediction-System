@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1><i class="fas fa-bell"></i> Notifications</h1>
+    <div class="controls">
+        <button id="mark-read-btn" class="btn btn-primary">
+            <i class="fas fa-check-double"></i> Tout marquer comme lu
+        </button>
+    </div>
+</div>
+
+<div class="notifications-list">
+    <div class="chart-header">
+        <h2>Alertes et notifications récentes</h2>
+    </div>
+    <div id="notifications-container">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p>Chargement des notifications...</p>
+        </div>
+    </div>
+</div>
+
+<div class="chart-container">
+    <div class="chart-header">
+        <h2>Paramètres de notification</h2>
+    </div>
+    <div style="padding: 1rem;">
+        <p>Configurez vos préférences de notification:</p>
+        <div style="margin-top: 1rem;">
+            <div style="margin-bottom: 1rem;">
+                <input type="checkbox" id="email-notifications" checked>
+                <label for="email-notifications">Recevoir les alertes par email</label>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <input type="checkbox" id="trend-alerts" checked>
+                <label for="trend-alerts">Alertes de tendance anormale</label>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <input type="checkbox" id="peak-alerts" checked>
+                <label for="peak-alerts">Alertes de pics de consommation</label>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <input type="checkbox" id="prediction-alerts">
+                <label for="prediction-alerts">Alertes de prédiction critique</label>
+            </div>
+        </div>
+        <button class="btn btn-success" style="margin-top: 1rem;">
+            <i class="fas fa-save"></i> Enregistrer les préférences
+        </button>
+    </div>
+</div>
+{% endblock %}
